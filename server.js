@@ -1,3 +1,5 @@
+const { createProxyMiddleware } = require("http-proxy-middleware");
+
 const express = require("express");
 const app = express();
 const path = require("path");
@@ -12,3 +14,11 @@ app.use(express.static(path.join(__dirname, "../dib-front/build")));
 app.get("/", function (req, res) {
 	res.sendFile(path.join(__dirname, "../dib-front/build/index.html"));
 });
+
+app.use(
+	"/v1",
+	createProxyMiddleware({
+		target: "https://openapi.naver.com",
+		changeOrigin: true,
+	})
+);
