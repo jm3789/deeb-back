@@ -9,10 +9,10 @@ app.listen(8000, () => {
 	console.log("listening on 8000");
 });
 
-app.use(express.static(path.join(__dirname, "../dib-front/build")));
+app.use(express.static(path.join(__dirname, "../deeb-front/build")));
 
 app.get("/", function (req, res) {
-	res.sendFile(path.join(__dirname, "../dib-front/build/index.html"));
+	res.sendFile(path.join(__dirname, "../deeb-front/build/index.html"));
 });
 
 app.use(
