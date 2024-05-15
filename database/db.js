@@ -1,5 +1,7 @@
 const mysql = require("mysql");
 
+require("dotenv").config();
+
 const dbConncection = mysql.createConnection({
   host: "localhost",
   port: 3306,
@@ -13,4 +15,4 @@ dbConncection.connect((e) => {
   else console.log("db 연결 성공");
 });
 
-module.exports = conn;
+module.exports = dbConncection;
