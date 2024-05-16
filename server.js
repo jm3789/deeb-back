@@ -112,7 +112,9 @@ app.get("/logout", async (req, res) => {
 // 유저 정보 get
 app.get("/userinfo", async (req, res) => {
   if (!req.session.userId) {
-    res.status(400).json("로그인되지 않은 상태입니다.");
+    res
+      .status(200)
+      .json({ data: null, message: "로그인되지 않은 상태입니다." });
   } else {
     try {
       db.query(
