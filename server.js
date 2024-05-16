@@ -34,17 +34,6 @@ app.use(
   })
 );
 
-// 유저권한 체크
-app.get("/authcheck", (req, res) => {
-  const sendData = { isLogin: "" };
-  if (req.session.is_logined) {
-    sendData.isLogin = "True";
-  } else {
-    sendData.isLogin = "False";
-  }
-  res.send(sendData);
-});
-
 // 회원가입
 app.post("/signup", (req, res) => {
   const { loginId, password, nickname } = req.body;
@@ -100,9 +89,8 @@ app.post("/signin", async (req, res) => {
               return;
             }
             // 세션 정보 갱신
-            req.session.is_logined = true;
-            req.session.loginId = loginId;
-            res.status(200).json("로그인 성공");
+            req.session.userId = result[0].userId;
+            res.status(200).json("로그인 성공!");
           }
         }
       );
@@ -122,23 +110,22 @@ app.get("/logout", async (req, res) => {
 });
 
 // 유저 정보 get
-app.get("/userdetail", async (req, res) => {
-  if (!req.session.loginId) {
-    res.status(400).json("세션이 만료되었습니다. 다시 로그인해주세요.");
+app.get("/userinfo", async (req, res) => {
+  if (!req.session.userId) {
+    res.status(400).json("로그인되지 않은 상태입니다.");
   } else {
     try {
       db.query(
-        "SELECT * FROM user WHERE loginId = ?",
-        loginId,
+        "SELECT * FROM user WHERE userId = ?",
+        req.session.userId,
         async (error, result) => {
           if (result.length == 0)
             res.status(400).json("존재하지 않는 아이디입니다.");
           else {
-            // 해당 유저의 닉네임 가져오기
-            const sendData = { nickname: result[0].nickname };
-            res
-              .status(200)
-              .json({ data: sendData, message: "유저정보 가져오기 성공" });
+            res.status(200).json({
+              data: JSON.parse(JSON.stringify(result[0])),
+              message: "유저정보 가져오기 성공",
+            });
           }
         }
       );
@@ -151,36 +138,21 @@ app.get("/userdetail", async (req, res) => {
 
 // 유저 deeps get
 app.get("/userdeeps", async (req, res) => {
-  if (!req.session.loginId) {
+  console.log(req.session);
+  if (!req.session.userId) {
     res.status(400).json("세션이 만료되었습니다. 다시 로그인해주세요.");
   } else {
+    const userId = req.session.userId;
     try {
-      // loginId로 해당 유저의 userId 가져오기
+      // userId로 해당 유저의 딥스 가져오기
       db.query(
-        "SELECT * FROM user WHERE loginId = ?",
-        loginId,
+        "SELECT * FROM deep WHERE userId = ?",
+        userId,
         async (error, result) => {
-          if (result.length == 0)
-            res.status(400).json("존재하지 않는 아이디입니다.");
-          else {
-            const userId = result[0].userId;
-            try {
-              // userId로 해당 유저의 딥스 가져오기
-              db.query(
-                "SELECT * FROM deep WHERE userId = ?",
-                userId,
-                async (error, result) => {
-                  const sendData = { deeplist: result };
-                  res
-                    .status(200)
-                    .json({ data: sendData, message: "딥스 가져오기 성공" });
-                }
-              );
-            } catch (error) {
-              console.error(error);
-              res.status(500).json(error);
-            }
-          }
+          const sendData = { deeplist: result };
+          res
+            .status(200)
+            .json({ data: sendData, message: "딥스 가져오기 성공" });
         }
       );
     } catch (error) {
